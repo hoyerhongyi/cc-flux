@@ -57,6 +57,9 @@ $ClaudeRealExe = "$env:LOCALAPPDATA\bin\claude.exe"
 if (-not (Test-Path $ClaudeRealExe)) {
     $ClaudeRealExe = (Get-Command claude -CommandType Application -ErrorAction SilentlyContinue).Source
 }
+if (-not $ClaudeRealExe) {
+    Write-Warning "cc-flux: could not locate claude.exe - the claude* functions will not work until it is installed/on PATH."
+}
 
 # ---- Helper: wipe ALL Claude-related env vars from this session ----
 function global:Clear-ClaudeEnv {
@@ -79,17 +82,20 @@ function global:Set-ClaudeEnv {
 
 # ---- Dynamic function generation ----
 # Creates: claudesub, claudeds, claudemimo, ...
+# Each function captures its config/exe by closure, so it does not depend on
+# the global variables still existing (or being unmodified) at call time.
 foreach ($shortName in $ClaudeEnvConfigs.Keys) {
-    $funcName = "claude$shortName"
+    $config      = $ClaudeEnvConfigs[$shortName]
     $displayName = $shortName.ToUpper()
+    $exe         = $ClaudeRealExe
 
-    $sb = [scriptblock]::Create(@"
+    $sb = {
         Clear-ClaudeEnv
         Write-Host ">>> Claude [$displayName] - injecting env vars..." -ForegroundColor Cyan
-        Set-ClaudeEnv `$ClaudeEnvConfigs['$shortName']
-        & `$ClaudeRealExe @args
-"@)
-    Set-Item -Path "function:\global:$funcName" -Value $sb
+        Set-ClaudeEnv $config
+        & $exe @args
+    }.GetNewClosure()
+    Set-Item -Path "function:\global:claude$shortName" -Value $sb
 }
 
 # ---- Override native 'claude' - hijack to claudesub ----
