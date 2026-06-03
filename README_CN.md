@@ -5,7 +5,7 @@
 
 ## 原理
 
-`$ClaudeEnvConfigs` 是唯一的配置来源，一个 HashTable 搞定一切。每个条目把短别名（如 `"ds"`、`"mimo"`）映射到一组环境变量。官方订阅条目的 key 是一个空格 `" "`，所有值都是 `$null`，意味着"使用官方 Claude Pro 订阅，不做任何覆盖"。原生 `claude` 命令本身被覆写，执行的就是这套全量清理的逻辑。
+`$ClaudeEnvConfigs` 是唯一的配置来源，一个 HashTable 搞定一切。每个条目把短别名（如 `"ds"`、`"mimo"`）映射到一组环境变量。官方订阅条目的 key 是 `"sub"`，所有值都是 `$null`，意味着"使用官方 Claude Pro 订阅，不做任何覆盖"。它会自动生成为 `claudesub`，而原生 `claude` 命令被覆写为直接劫持到 `claudesub`，两者执行的都是这套全量清理的逻辑。
 
 加载脚本时，`foreach` 遍历这个 HashTable，为每个 key 动态生成对应的 `claude<key>` 函数。每个函数执行完全相同的三步流水线：
 
@@ -13,7 +13,7 @@
 2. **Set-ClaudeEnv** — 注入目标 API 的配置（Base URL、Auth Token、模型映射等）。
 3. **claude.exe** — 启动真正的 Claude Code 程序，它此时看到的只有目标 API 的环境变量。
 
-最终效果：敲 `claudeds` 获得 DeepSeek 驱动的 Claude Code 会话，敲 `claudemimo` 切换到小米 API，敲 `claude` 走官方 Pro。不同终端窗口可以同时跑不同 API，完全隔离。
+最终效果：敲 `claudeds` 获得 DeepSeek 驱动的 Claude Code 会话，敲 `claudemimo` 切换到小米 API，敲 `claude`（或 `claudesub`）走官方 Pro。不同终端窗口可以同时跑不同 API，完全隔离。
 
 ### 三个设计支柱
 
@@ -21,7 +21,7 @@
 
 2. **数据驱动，拒绝硬编码** — `$ClaudeEnvConfigs` 是唯一需要编辑的地方。所有 `claude<key>` 函数均由它自动生成。接入新 API 后端只需在 HashTable 里加一个条目——无需写函数定义，无需复制粘贴，零样板代码。
 
-3. **全量清理，杜绝残留** — 原生 `claude` 命令被覆写，每次调用都从完整的环境清理开始。同一终端窗口内反复切换后端，绝不会有旧变量残留，不存在意外混用配置的可能。
+3. **全量清理，杜绝残留** — 原生 `claude` 命令被覆写为劫持到 `claudesub`，每次调用都从完整的环境清理开始。同一终端窗口内反复切换后端，绝不会有旧变量残留，不存在意外混用配置的可能。
 
 ## 快速开始
 

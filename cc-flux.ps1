@@ -9,7 +9,7 @@
 $ClaudeEnvConfigs = @{
 
     # Official Claude Pro (default - all env vars cleared)
-    " " = @{
+    "sub" = @{
         "ANTHROPIC_BASE_URL"              = $null
         "ANTHROPIC_AUTH_TOKEN"            = $null
         "ANTHROPIC_MODEL"                 = $null
@@ -78,7 +78,7 @@ function global:Set-ClaudeEnv {
 }
 
 # ---- Dynamic function generation ----
-# Creates: claudeds, claudemimo, claudepro, ...
+# Creates: claudesub, claudeds, claudemimo, ...
 foreach ($shortName in $ClaudeEnvConfigs.Keys) {
     $funcName = "claude$shortName"
     $displayName = $shortName.ToUpper()
@@ -92,11 +92,9 @@ foreach ($shortName in $ClaudeEnvConfigs.Keys) {
     Set-Item -Path "function:\global:$funcName" -Value $sb
 }
 
-# ---- Override native 'claude' - clean first, then run ----
+# ---- Override native 'claude' - hijack to claudesub ----
 function global:claude {
-    Clear-ClaudeEnv
-    Write-Host ">>> Claude [PRO] - running with official subscription" -ForegroundColor Green
-    & $ClaudeRealExe @args
+    claudesub @args
 }
 
-Write-Host "cc-flux loaded. Available: $(($ClaudeEnvConfigs.Keys | ForEach-Object { if ($_ -eq ' ') { 'claude' } else { "claude$_" } }) -join ', ')" -ForegroundColor Magenta
+Write-Host "cc-flux loaded. Available: claude, $(($ClaudeEnvConfigs.Keys | Where-Object { $_ -ne 'sub' } | ForEach-Object { "claude$_" }) -join ', ')" -ForegroundColor Magenta

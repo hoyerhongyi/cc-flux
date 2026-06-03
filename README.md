@@ -5,7 +5,7 @@ Switch between the official Claude Pro subscription and any third-party/compatib
 
 ## How It Works
 
-`$ClaudeEnvConfigs` is a single HashTable that serves as the single source of truth. Each entry maps a short alias (like `"ds"` or `"mimo"`) to a set of environment variables. The official subscription entry uses a space `" "` as its key, with all values set to `$null` — meaning "use the official Claude Pro subscription with no overrides." The native `claude` command itself is overridden to run with this clean-slate behavior.
+`$ClaudeEnvConfigs` is a single HashTable that serves as the single source of truth. Each entry maps a short alias (like `"ds"` or `"mimo"`) to a set of environment variables. The official subscription entry uses `"sub"` as its key, with all values set to `$null` — meaning "use the official Claude Pro subscription with no overrides." It is auto-generated as `claudesub`, and the native `claude` command is overridden to hijack straight to `claudesub`, so both run with this clean-slate behavior.
 
 From this one HashTable, all `claude<key>` functions are auto-generated at load time. Each generated function follows the same three-step pipeline when you invoke it:
 
@@ -13,7 +13,7 @@ From this one HashTable, all `claude<key>` functions are auto-generated at load 
 2. **Set-ClaudeEnv** — inject the target API's variables (base URL, auth token, model overrides, etc.) into the session.
 3. **claude.exe** — launch the real Claude Code binary, which now sees only the intended configuration.
 
-The result: typing `claudeds` gives you a Claude Code session backed by DeepSeek. Typing `claudemimo` switches to Mimo. typing `claude` uses your official Pro subscription. Different terminal windows can run different APIs simultaneously with zero interference.
+The result: typing `claudeds` gives you a Claude Code session backed by DeepSeek. Typing `claudemimo` switches to Mimo. Typing `claude` (or `claudesub`) uses your official Pro subscription. Different terminal windows can run different APIs simultaneously with zero interference.
 
 ### Three design pillars
 
@@ -21,7 +21,7 @@ The result: typing `claudeds` gives you a Claude Code session backed by DeepSeek
 
 2. **Data-driven, no hardcoding** — `$ClaudeEnvConfigs` is the only place you need to edit. Every `claude<key>` function is generated from it automatically. Adding support for a new API backend means adding one entry to the HashTable — no function definitions, no copy-paste, no boilerplate.
 
-3. **Clean-slate enforcement** — the native `claude` command is overridden so that every invocation begins with a full environment cleanup. This guarantees that switching between backends — even in the same terminal window — never leaves stale variables behind. There is no way to accidentally mix configurations.
+3. **Clean-slate enforcement** — the native `claude` command is overridden to hijack to `claudesub`, so every invocation begins with a full environment cleanup. This guarantees that switching between backends — even in the same terminal window — never leaves stale variables behind. There is no way to accidentally mix configurations.
 
 ## Quick Start
 
