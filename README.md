@@ -19,7 +19,7 @@ The result: typing `claudeds` gives you a Claude Code session backed by DeepSeek
 
 1. **Session isolation via `$env:`** — all variables live strictly in the current PowerShell session's memory. Close the terminal window and they vanish. Nothing touches the Windows registry, system environment variables, or any config file on disk.
 
-2. **Data-driven, no hardcoding** — `$ClaudeEnvConfigs` is the only place you need to edit. Every `claude<key>` function is generated from it automatically. Adding support for a new API backend means adding one entry to the HashTable — no function definitions, no copy-paste, no boilerplate.
+2. **Data-driven, no hardcoding** — `$ClaudeEnvConfigs` is the only place you need to edit. Every `claude<key>` function is generated from it automatically, each capturing its own config by closure at load time so it stays self-contained and never depends on global state at call time. Adding support for a new API backend means adding one entry to the HashTable — no function definitions, no copy-paste, no boilerplate.
 
 3. **Clean-slate enforcement** — the native `claude` command is overridden to hijack to `claudesub`, so every invocation begins with a full environment cleanup. This guarantees that switching between backends — even in the same terminal window — never leaves stale variables behind. There is no way to accidentally mix configurations.
 
@@ -27,7 +27,9 @@ The result: typing `claudeds` gives you a Claude Code session backed by DeepSeek
 
 ### 1. Prerequisites
 
-Make sure your system has a PowerShell Profile. If not, create one first:
+Claude Code must already be installed (cc-flux locates `claude.exe` under `%LOCALAPPDATA%\bin` or on your `PATH`; if it can't be found, the script prints a warning at load and the `claude*` functions won't run).
+
+Also make sure your system has a PowerShell Profile. If not, create one first:
 
 ```powershell
 if (!(Test-Path -Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force }

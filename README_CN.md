@@ -19,7 +19,7 @@
 
 1. **`$env:` 会话隔离** — 所有变量仅存在于当前 PowerShell 终端进程的内存中。关闭窗口即彻底消失。不写注册表，不碰系统环境变量，不落盘。
 
-2. **数据驱动，拒绝硬编码** — `$ClaudeEnvConfigs` 是唯一需要编辑的地方。所有 `claude<key>` 函数均由它自动生成。接入新 API 后端只需在 HashTable 里加一个条目——无需写函数定义，无需复制粘贴，零样板代码。
+2. **数据驱动，拒绝硬编码** — `$ClaudeEnvConfigs` 是唯一需要编辑的地方。所有 `claude<key>` 函数均由它自动生成，且每个函数在加载时通过闭包捕获各自的配置，自包含、不依赖调用时的全局状态。接入新 API 后端只需在 HashTable 里加一个条目——无需写函数定义，无需复制粘贴，零样板代码。
 
 3. **全量清理，杜绝残留** — 原生 `claude` 命令被覆写为劫持到 `claudesub`，每次调用都从完整的环境清理开始。同一终端窗口内反复切换后端，绝不会有旧变量残留，不存在意外混用配置的可能。
 
@@ -27,7 +27,9 @@
 
 ### 1. 前置准备
 
-请确保你的系统已创建 PowerShell Profile。如果没有，请先在终端执行以下命令创建：
+需先安装好 Claude Code（cc-flux 会在 `%LOCALAPPDATA%\bin` 或 `PATH` 中定位 `claude.exe`；若找不到，脚本加载时会打印一条警告，且 `claude*` 函数无法运行）。
+
+另外请确保你的系统已创建 PowerShell Profile。如果没有，请先在终端执行以下命令创建：
 
 ```powershell
 if (!(Test-Path -Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force }
