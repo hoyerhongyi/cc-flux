@@ -5,7 +5,7 @@
 
 ## 原理
 
-`$ClaudeEnvConfigs` 是唯一的配置来源，一个 HashTable 搞定一切。每个条目把短别名（如 `"ds"`、`"mimo"`）映射到一组环境变量。`"pro"` 条目的所有值都是 `$null`，意味着"使用官方 Claude Pro 订阅，不做任何覆盖"。
+`$ClaudeEnvConfigs` 是唯一的配置来源，一个 HashTable 搞定一切。每个条目把短别名（如 `"ds"`、`"mimo"`）映射到一组环境变量。官方订阅条目的 key 是一个空格 `" "`，所有值都是 `$null`，意味着"使用官方 Claude Pro 订阅，不做任何覆盖"。原生 `claude` 命令本身被覆写，执行的就是这套全量清理的逻辑。
 
 加载脚本时，`foreach` 遍历这个 HashTable，为每个 key 动态生成对应的 `claude<key>` 函数。每个函数执行完全相同的三步流水线：
 
@@ -51,7 +51,7 @@ Add-Content -Path $PROFILE -Value '. "D:\Scripts\cc-flux.ps1"'
 ### 3. 打开新终端
 
 ```
-cc-flux loaded. Available: claudepro, claudeds, claudemimo
+cc-flux loaded. Available: claude, claudeds, claudemimo
 ```
 
 ### 4. 使用

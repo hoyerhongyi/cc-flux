@@ -5,7 +5,7 @@ Switch between the official Claude Pro subscription and any third-party/compatib
 
 ## How It Works
 
-`$ClaudeEnvConfigs` is a single HashTable that serves as the single source of truth. Each entry maps a short alias (like `"ds"` or `"mimo"`) to a set of environment variables. The `"pro"` entry has all values set to `$null`, which means "use the official Claude Pro subscription with no overrides."
+`$ClaudeEnvConfigs` is a single HashTable that serves as the single source of truth. Each entry maps a short alias (like `"ds"` or `"mimo"`) to a set of environment variables. The official subscription entry uses a space `" "` as its key, with all values set to `$null` — meaning "use the official Claude Pro subscription with no overrides." The native `claude` command itself is overridden to run with this clean-slate behavior.
 
 From this one HashTable, all `claude<key>` functions are auto-generated at load time. Each generated function follows the same three-step pipeline when you invoke it:
 
@@ -51,7 +51,7 @@ Add-Content -Path $PROFILE -Value '. "D:\Scripts\cc-flux.ps1"'
 ### 3. Open a new terminal
 
 ```
-cc-flux loaded. Available: claudepro, claudeds, claudemimo
+cc-flux loaded. Available: claude, claudeds, claudemimo
 ```
 
 ### 4. Use it

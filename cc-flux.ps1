@@ -9,7 +9,7 @@
 $ClaudeEnvConfigs = @{
 
     # Official Claude Pro (default - all env vars cleared)
-    "pro" = @{
+    " " = @{
         "ANTHROPIC_BASE_URL"              = $null
         "ANTHROPIC_AUTH_TOKEN"            = $null
         "ANTHROPIC_MODEL"                 = $null
@@ -99,4 +99,4 @@ function global:claude {
     & $ClaudeRealExe @args
 }
 
-Write-Host "cc-flux loaded. Available: $(($ClaudeEnvConfigs.Keys | ForEach-Object { "claude$_" }) -join ', ')" -ForegroundColor Magenta
+Write-Host "cc-flux loaded. Available: $(($ClaudeEnvConfigs.Keys | ForEach-Object { if ($_ -eq ' ') { 'claude' } else { "claude$_" } }) -join ', ')" -ForegroundColor Magenta
